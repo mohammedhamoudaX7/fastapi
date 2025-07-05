@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>BMI Calculator (GET URL)</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #eef1f5;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+
+        .card {
+            background: #fff;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.15);
+            width: 360px;
+        }
+
+        h2 {
+            text-align: center;
+            color: #333;
+        }
+
+        label {
+            display: block;
+            margin-top: 15px;
+            color: #444;
+            font-weight: bold;
+        }
+
+        input {
+            width: 100%;
+            padding: 8px 10px;
+            margin-top: 5px;
+            border-radius: 6px;
+            border: 1px solid #ccc;
+        }
+
+        button {
+            margin-top: 25px;
+            width: 100%;
+            padding: 10px;
+            background-color: #28a745;
+            color: white;
+            font-size: 16px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background-color: #218838;
+        }
+
+        .result {
+            margin-top: 20px;
+            font-size: 18px;
+            text-align: center;
+            color: #007bff;
+        }
+
+        .error {
+            color: #dc3545;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="card">
+        <h2>BMI Calculator</h2>
+        <form id="bmiForm">
+            <label for="weight">Weight (kg):</label>
+            <input type="number" id="weight" name="weight" required step="0.1">
+
+            <label for="height">Height (m):</label>
+            <input type="number" id="height" name="height" required step="0.01">
+
+            <button type="submit">Get BMI</button>
+        </form>
+        <div id="response" class="result"></div>
+    </div>
+
+    <script>
+        document.getElementById("bmiForm").addEventListener("submit", async function (event) {
+            event.preventDefault();
+
+            const weight = document.getElementById("weight").value;
+            const height = document.getElementById("height").value;
+            const resultBox = document.getElementById("response");
+
+            const url = `http://127.0.0.1:8000/calculate_bmi?weight=${weight}&height=${height}`;
+
+            try {
+                const response = await fetch(url);
+                const data = await response.json();
+
+                const resultBox = document.getElementById("response");
+
+                if (!response.ok) {
+                    if (data.detail && Array.isArray(data.detail)) {
+                        const errors = data.detail.map(e => `• ${e.msg}`).join("<br>");
+                        resultBox.innerHTML = `Validation Errors:<br>${errors}`;
+                    } else if (data.detail) {
+                        resultBox.innerHTML = `Error: ${data.detail}`;
+                    } else {
+                        resultBox.innerHTML = "Unknown server error.";
+                    }
+
+                    resultBox.classList.add("error");
+                } else {
+                    resultBox.innerText = `Your BMI is: ${data.bmi}`;
+                    resultBox.classList.remove("error");
+                }
+            } catch (error) {
+                document.getElementById("response").innerText = `Network or server error: ${error}`;
+                document.getElementById("response").classList.add("error");
+            }
+
+
+
+        });
+    </script>
+</body>
+
+</html>
